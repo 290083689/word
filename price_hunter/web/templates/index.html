@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceHunter · 电商比价猎手</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-card-hover: #1f2a40;
+  --border: #2a3650;
+  --border-accent: #3b82f6;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8899b4;
+  --text-muted: #5a6a84;
+  --accent-jd: #e4393c;
+  --accent-tb: #ff6a00;
+  --accent-pdd: #e02e24;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-yellow: #f59e0b;
+  --accent-purple: #8b5cf6;
+  --glow-blue: rgba(59, 130, 246, 0.15);
+  --glow-green: rgba(16, 185, 129, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
+}
+
+.brand h1 {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #e8ecf4, #8899b4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+}
+
+/* Search */
+.search-section {
+  margin-bottom: 40px;
+}
+
+.search-box {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.search-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.search-input-wrap .icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: 'Noto Sans SC', sans-serif;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.search-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px var(--glow-blue);
+}
+
+.search-input::placeholder { color: var(--text-muted); }
+
+.search-btn {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+}
+
+.search-btn:active { transform: translateY(0); }
+
+.search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.platform-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.platform-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  font-size: 14px;
+}
+
+.platform-chip.active {
+  border-color: var(--accent-blue);
+  background: var(--glow-blue);
+}
+
+.platform-chip:hover { border-color: var(--accent-blue); }
+
+.platform-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.platform-dot.jd { background: var(--accent-jd); }
+.platform-dot.tb { background: var(--accent-tb); }
+.platform-dot.pdd { background: var(--accent-pdd); }
+
+.quick-keywords {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.quick-keywords span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.quick-kw {
+  padding: 4px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.quick-kw:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.08);
+}
+
+/* Stats Row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+.stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+.stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-purple)); }
+.stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-value.price { color: var(--accent-green); }
+.stat-value.count { color: var(--accent-blue); }
+.stat-value.range { color: var(--accent-yellow); }
+
+/* Grid Layout */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.grid-1 {
+  margin-bottom: 32px;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.card:hover { border-color: var(--border-accent); }
+
+.card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-body {
+  padding: 24px;
+}
+
+/* Chart */
+.chart-wrap {
+  position: relative;
+  height: 320px;
+}
+
+/* Product Table */
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.product-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'JetBrains Mono', monospace;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.product-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(42, 54, 80, 0.5);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.product-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+.product-table tr.recommended td {
+  background: var(--glow-green);
+}
+
+.product-name {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.price-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--accent-green);
+  font-size: 15px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.platform-badge.jd { background: rgba(228, 57, 60, 0.15); color: var(--accent-jd); }
+.platform-badge.tb { background: rgba(255, 106, 0, 0.15); color: var(--accent-tb); }
+.platform-badge.pdd { background: rgba(224, 46, 36, 0.15); color: var(--accent-pdd); }
+
+.rec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--glow-green);
+  color: var(--accent-green);
+}
+
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.score-track {
+  width: 60px;
+  height: 6px;
+  background: rgba(42, 54, 80, 0.8);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.score-fill.high { background: var(--accent-green); }
+.score-fill.mid { background: var(--accent-yellow); }
+.score-fill.low { background: var(--accent-jd); }
+
+.score-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 30px;
+}
+
+.discount-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-yellow);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Recommendation Cards */
+.rec-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.rec-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.rec-card:hover {
+  border-color: var(--accent-green);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1);
+}
+
+.rec-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+}
+
+.rec-rank {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 40px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255, 255, 255, 0.04);
+  line-height: 1;
+}
+
+.rec-reason {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--glow-green);
+  color: var(--accent-green);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.rec-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.rec-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.rec-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--accent-green);
+  margin-bottom: 12px;
+}
+
+.rec-price .currency { font-size: 14px; font-weight: 500; }
+
+.rec-scores {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.rec-score-item {
+  text-align: center;
+  padding: 8px 4px;
+  background: rgba(42, 54, 80, 0.4);
+  border-radius: 8px;
+}
+
+.rec-score-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rec-score-val {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.rec-link:hover { color: var(--accent-cyan); }
+
+/* Loading */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 23, 0.8);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loading-overlay.active { display: flex; }
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 20px; margin-bottom: 8px; color: var(--text-secondary); }
+.empty-state p { font-size: 14px; }
+
+/* Results Section */
+.results-section {
+  display: none;
+}
+
+.results-section.active {
+  display: block;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Footer */
+.footer {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.footer a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .header-inner { flex-direction: column; align-items: flex-start; }
+  .search-box { flex-direction: column; }
+  .rec-cards { grid-template-columns: 1fr; }
+  .product-table { font-size: 12px; }
+  .product-table th, .product-table td { padding: 10px 8px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Table scroll */
+.table-scroll {
+  overflow-x: auto;
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">正在从各大平台采集数据...</div>
+</div>
+
+<div class="container">
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">🔍</div>
+        <div>
+          <h1>PriceHunter</h1>
+          <div class="subtitle">电商比价猎手 · JD / TB / PDD</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="search-section">
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <span class="icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="输入商品关键词，如：手机、耳机、笔记本..." autocomplete="off">
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="doSearch()">开始比价</button>
+    </div>
+    <div class="platform-filters">
+      <div class="platform-chip active" data-platform="京东" onclick="togglePlatform(this)">
+        <span class="platform-dot jd"></span> 京东
+      </div>
+      <div class="platform-chip active" data-platform="淘宝" onclick="togglePlatform(this)">
+        <span class="platform-dot tb"></span> 淘宝
+      </div>
+      <div class="platform-chip active" data-platform="拼多多" onclick="togglePlatform(this)">
+        <span class="platform-dot pdd"></span> 拼多多
+      </div>
+    </div>
+    <div class="quick-keywords">
+      <span>快速搜索:</span>
+      <button class="quick-kw" onclick="quickSearch('手机')">手机</button>
+      <button class="quick-kw" onclick="quickSearch('耳机')">耳机</button>
+      <button class="quick-kw" onclick="quickSearch('笔记本')">笔记本</button>
+    </div>
+  </section>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📊</div>
+    <h3>输入关键词开始比价</h3>
+    <p>支持京东、淘宝、拼多多三大平台实时比价</p>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 价格区间分布</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="distributionChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏪 平台均价对比</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="platformChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📈 价格 vs 销量散点</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🎯 综合评分雷达</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏆 性价比推荐</div>
+          <span style="font-size:12px;color:var(--text-muted)">综合价格、销量、评分加权计算</span>
+        </div>
+        <div class="card-body">
+          <div class="rec-cards" id="recCards"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 全部商品（按价格排序）</div>
+          <span id="productCount" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-scroll">
+            <table class="product-table" id="productTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>平台</th>
+                  <th>商品名称</th>
+                  <th>价格</th>
+                  <th>销量</th>
+                  <th>店铺评分</th>
+                  <th>性价比</th>
+                  <th>优惠</th>
+                  <th>推荐</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    PriceHunter · 电商比价猎手 — 数据仅供参考，实际价格以平台为准
+  </footer>
+</div>
+
+<script>
+let charts = {};
+let currentData = null;
+
+function togglePlatform(el) {
+  el.classList.toggle('active');
+}
+
+function getSelectedPlatforms() {
+  const chips = document.querySelectorAll('.platform-chip.active');
+  return Array.from(chips).map(c => c.dataset.platform);
+}
+
+function quickSearch(kw) {
+  document.getElementById('searchInput').value = kw;
+  doSearch();
+}
+
+async function doSearch() {
+  const keyword = document.getElementById('searchInput').value.trim();
+  if (!keyword) return;
+
+  const platforms = getSelectedPlatforms();
+  if (platforms.length === 0) {
+    alert('请至少选择一个平台');
+    return;
+  }
+
+  const loading = document.getElementById('loading');
+  const btn = document.getElementById('searchBtn');
+  loading.classList.add('active');
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword, platforms, top_n: 5 }),
+    });
+    const data = await resp.json();
+    currentData = data;
+    renderResults(data);
+  } catch (e) {
+    console.error(e);
+    alert('请求失败，请重试');
+  } finally {
+    loading.classList.remove('active');
+    btn.disabled = false;
+  }
+}
+
+function renderResults(data) {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultsSection').classList.add('active');
+
+  renderStats(data);
+  renderDistributionChart(data);
+  renderPlatformChart(data);
+  renderScatterChart(data);
+  renderRadarChart(data);
+  renderRecommendations(data);
+  renderProductTable(data);
+}
+
+function renderStats(data) {
+  const stats = data.price_stats;
+  const html = `
+    <div class="stat-card">
+      <div class="stat-label">采集商品</div>
+      <div class="stat-value count">${data.total_after_clean}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">最低价</div>
+      <div class="stat-value price">¥${stats.min}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">平均价</div>
+      <div class="stat-value range">¥${stats.avg}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">最高价</div>
+      <div class="stat-value" style="color:var(--accent-purple)">¥${stats.max}</div>
+    </div>
+  `;
+  document.getElementById('statsRow').innerHTML = html;
+}
+
+function renderDistributionChart(data) {
+  if (charts.distribution) charts.distribution.destroy();
+  const dist = data.distribution;
+  const ctx = document.getElementById('distributionChart').getContext('2d');
+  charts.distribution = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dist.map(d => '¥' + d.range),
+      datasets: [{
+        label: '商品数量',
+        data: dist.map(d => d.count),
+        backgroundColor: [
+          'rgba(16, 185, 129, 0.7)',
+          'rgba(6, 182, 212, 0.7)',
+          'rgba(59, 130, 246, 0.7)',
+          'rgba(139, 92, 246, 0.7)',
+          'rgba(245, 158, 11, 0.7)',
+        ],
+        borderColor: [
+          'rgba(16, 185, 129, 1)',
+          'rgba(6, 182, 212, 1)',
+          'rgba(59, 130, 246, 1)',
+          'rgba(139, 92, 246, 1)',
+          'rgba(245, 158, 11, 1)',
+        ],
+        borderWidth: 1,
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
+        },
+        y: {
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+function renderPlatformChart(data) {
+  if (charts.platform) charts.platform.destroy();
+  const comp = data.comparison;
+  const platforms = Object.keys(comp);
+  const colors = {
+    '京东': { bg: 'rgba(228, 57, 60, 0.7)', border: 'rgba(228, 57, 60, 1)' },
+    '淘宝': { bg: 'rgba(255, 106, 0, 0.7)', border: 'rgba(255, 106, 0, 1)' },
+    '拼多多': { bg: 'rgba(224, 46, 36, 0.7)', border: 'rgba(224, 46, 36, 1)' },
+  };
+
+  const ctx = document.getElementById('platformChart').getContext('2d');
+  charts.platform = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: platforms,
+      datasets: [
+        {
+          label: '均价',
+          data: platforms.map(p => comp[p].avg_price),
+          backgroundColor: platforms.map(p => (colors[p] || colors['京东']).bg),
+          borderColor: platforms.map(p => (colors[p] || colors['京东']).border),
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+        {
+          label: '最低价',
+          data: platforms.map(p => comp[p].min_price),
+          backgroundColor: 'rgba(16, 185, 129, 0.5)',
+          borderColor: 'rgba(16, 185, 129, 1)',
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
+        },
+        y: {
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: {
+            color: '#8899b4',
+            font: { family: 'JetBrains Mono', size: 11 },
+            callback: v => '¥' + v,
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderScatterChart(data) {
+  if (charts.scatter) charts.scatter.destroy();
+  const products = data.all_products;
+  const platformColors = {
+    '京东': { bg: 'rgba(228, 57, 60, 0.6)', border: 'rgba(228, 57, 60, 1)' },
+    '淘宝': { bg: 'rgba(255, 106, 0, 0.6)', border: 'rgba(255, 106, 0, 1)' },
+    '拼多多': { bg: 'rgba(224, 46, 36, 0.6)', border: 'rgba(224, 46, 36, 1)' },
+  };
+
+  const datasets = {};
+  products.forEach(p => {
+    if (!datasets[p.platform]) {
+      datasets[p.platform] = {
+        label: p.platform,
+        data: [],
+        backgroundColor: (platformColors[p.platform] || platformColors['京东']).bg,
+        borderColor: (platformColors[p.platform] || platformColors['京东']).border,
+        borderWidth: 1,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+      };
+    }
+    datasets[p.platform].data.push({ x: p.price, y: p.sales, name: p.name });
+  });
+
+  const ctx = document.getElementById('scatterChart').getContext('2d');
+  charts.scatter = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets: Object.values(datasets) },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const d = ctx.raw;
+              return `${d.name.substring(0, 20)}... ¥${d.x} / 销量${d.y}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: '价格 (¥)', color: '#8899b4', font: { family: 'Noto Sans SC' } },
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
+        },
+        y: {
+          title: { display: true, text: '销量', color: '#8899b4', font: { family: 'Noto Sans SC' } },
+          grid: { color: 'rgba(42,54,80,0.3)' },
+          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+function renderRadarChart(data) {
+  if (charts.radar) charts.radar.destroy();
+  const recommended = data.products.slice(0, 3);
+  const radarColors = [
+    { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 1)' },
+    { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgba(59, 130, 246, 1)' },
+    { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 1)' },
+  ];
+
+  const datasets = recommended.map((p, i) => ({
+    label: p.name.substring(0, 15),
+    data: [p.price_score, p.sales_score, p.rating_score, p.value_score],
+    backgroundColor: radarColors[i].bg,
+    borderColor: radarColors[i].border,
+    borderWidth: 2,
+    pointBackgroundColor: radarColors[i].border,
+    pointBorderColor: '#fff',
+    pointBorderWidth: 1,
+    pointRadius: 4,
+  }));
+
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['价格评分', '销量评分', '口碑评分', '综合评分'],
+      datasets,
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 11 } },
+        },
+      },
+      scales: {
+        r: {
+          angleLines: { color: 'rgba(42,54,80,0.5)' },
+          grid: { color: 'rgba(42,54,80,0.5)' },
+          pointLabels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
+          ticks: { display: false },
+          suggestedMin: 0,
+          suggestedMax: 100,
+        },
+      },
+    },
+  });
+}
+
+function renderRecommendations(data) {
+  const recommended = data.products;
+  const html = recommended.map((p, i) => `
+    <div class="rec-card">
+      <div class="rec-rank">#${i + 1}</div>
+      <div class="rec-reason">${p.recommend_reason || '综合推荐'}</div>
+      <div class="rec-name">${escHtml(p.name)}</div>
+      <div class="rec-meta">
+        <span>${p.platform}</span>
+        <span>销量 ${p.sales.toLocaleString()}</span>
+        <span>评分 ${p.shop_rating}</span>
+      </div>
+      <div class="rec-price">
+        <span class="currency">¥</span>${p.price.toFixed(2)}
+        ${p.original_price ? `<span class="original-price">¥${p.original_price.toFixed(2)}</span>` : ''}
+      </div>
+      ${p.discount ? `<div class="discount-tag">${escHtml(p.discount)}</div>` : ''}
+      <div class="rec-scores">
+        <div class="rec-score-item">
+          <div class="rec-score-label">价格</div>
+          <div class="rec-score-val" style="color:var(--accent-green)">${p.price_score}</div>
+        </div>
+        <div class="rec-score-item">
+          <div class="rec-score-label">销量</div>
+          <div class="rec-score-val" style="color:var(--accent-blue)">${p.sales_score}</div>
+        </div>
+        <div class="rec-score-item">
+          <div class="rec-score-label">口碑</div>
+          <div class="rec-score-val" style="color:var(--accent-yellow)">${p.rating_score}</div>
+        </div>
+        <div class="rec-score-item">
+          <div class="rec-score-label">综合</div>
+          <div class="rec-score-val" style="color:var(--accent-cyan)">${p.value_score}</div>
+        </div>
+      </div>
+      <a class="rec-link" href="${escHtml(p.url)}" target="_blank" rel="noopener">查看商品 →</a>
+    </div>
+  `).join('');
+  document.getElementById('recCards').innerHTML = html;
+}
+
+function renderProductTable(data) {
+  const products = data.all_products;
+  document.getElementById('productCount').textContent = `共 ${products.length} 件商品`;
+  const html = products.map((p, i) => {
+    const platformClass = p.platform === '京东' ? 'jd' : p.platform === '淘宝' ? 'tb' : 'pdd';
+    const scoreClass = p.value_score >= 70 ? 'high' : p.value_score >= 40 ? 'mid' : 'low';
+    return `
+      <tr class="${p.recommended ? 'recommended' : ''}">
+        <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:12px">${i + 1}</td>
+        <td><span class="platform-badge ${platformClass}">${escHtml(p.platform)}</span></td>
+        <td><div class="product-name" title="${escHtml(p.name)}">${escHtml(p.name)}</div></td>
+        <td class="price-cell">
+          ¥${p.price.toFixed(2)}
+          ${p.original_price ? `<span class="original-price">¥${p.original_price.toFixed(2)}</span>` : ''}
+        </td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:13px">${p.sales.toLocaleString()}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:13px">${p.shop_rating}</td>
+        <td>
+          <div class="score-bar">
+            <div class="score-track"><div class="score-fill ${scoreClass}" style="width:${p.value_score}%"></div></div>
+            <span class="score-num">${p.value_score}</span>
+          </div>
+        </td>
+        <td>${p.discount ? `<span class="discount-tag">${escHtml(p.discount)}</span>` : '-'}</td>
+        <td>${p.recommended ? '<span class="rec-badge">⭐ 推荐</span>' : ''}</td>
+      </tr>
+    `;
+  }).join('');
+  document.getElementById('productTableBody').innerHTML = html;
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+async function loadDemo() {
+  try {
+    const resp = await fetch('/api/demo?keyword=手机');
+    const data = await resp.json();
+    currentData = data;
+    document.getElementById('searchInput').value = '手机';
+    renderResults(data);
+  } catch (e) {
+    console.error('Demo load failed:', e);
+  }
+}
+
+loadDemo();
+</script>
+</body>
+</html>
