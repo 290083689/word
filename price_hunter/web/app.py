@@ -7,6 +7,7 @@ from price_hunter.models import Product
 from price_hunter.scrapers import JdScraper, TaobaoScraper, PddScraper
 from price_hunter.processor import DataProcessor
 from price_hunter.comparator import ProductComparator
+from price_hunter.matcher import ProductMatcher
 from price_hunter.demo_data import generate_demo_data
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -50,6 +51,8 @@ def search():
     distribution = comparator.get_price_distribution(bins=5)
     price_stats = DataProcessor(cleaned).get_price_stats()
 
+    grouped = ProductMatcher.group_products(cleaned)
+
     result = {
         "keyword": keyword,
         "total_collected": len(all_products),
@@ -59,15 +62,32 @@ def search():
         "comparison": comparison,
         "distribution": distribution,
         "price_stats": price_stats,
+        "grouped": grouped,
     }
 
     return jsonify(result)
+
+
+@app.route("/api/suggest", methods=["POST"])
+def suggest():
+    data = request.get_json() or {}
+    keyword = data.get("keyword", "").strip()
+    if not keyword or len(keyword) < 1:
+        return jsonify({"suggestions": []})
+
+    suggestions = ProductMatcher.get_suggestions(keyword, limit=8)
+    return jsonify({"suggestions": suggestions, "keyword": keyword})
 
 
 @app.route("/api/demo")
 def demo():
     keyword = request.args.get("keyword", "手机")
     result = generate_demo_data(keyword)
+
+    all_products = [Product(**p) for p in result["all_products"]]
+    grouped = ProductMatcher.group_products(all_products)
+    result["grouped"] = grouped
+
     return jsonify(result)
 
 

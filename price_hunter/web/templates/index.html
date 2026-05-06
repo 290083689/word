@@ -25,8 +25,10 @@
   --accent-green: #10b981;
   --accent-yellow: #f59e0b;
   --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
   --glow-blue: rgba(59, 130, 246, 0.15);
   --glow-green: rgba(16, 185, 129, 0.15);
+  --glow-pink: rgba(236, 72, 153, 0.12);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +64,6 @@ body::before {
   z-index: 1;
 }
 
-/* Header */
 .header {
   padding: 40px 0 32px;
   border-bottom: 1px solid var(--border);
@@ -111,7 +112,6 @@ body::before {
   letter-spacing: 1px;
 }
 
-/* Search */
 .search-section {
   margin-bottom: 40px;
 }
@@ -135,6 +135,7 @@ body::before {
   transform: translateY(-50%);
   color: var(--text-muted);
   font-size: 18px;
+  z-index: 2;
 }
 
 .search-input {
@@ -148,6 +149,8 @@ body::before {
   font-family: 'Noto Sans SC', sans-serif;
   outline: none;
   transition: all 0.3s;
+  position: relative;
+  z-index: 2;
 }
 
 .search-input:focus {
@@ -156,6 +159,106 @@ body::before {
 }
 
 .search-input::placeholder { color: var(--text-muted); }
+
+.suggest-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  z-index: 50;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+.suggest-dropdown.active { display: block; }
+
+.suggest-loading {
+  padding: 16px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.suggest-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(42, 54, 80, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.suggest-item:last-child { border-bottom: none; }
+
+.suggest-item:hover { background: var(--bg-card-hover); }
+
+.suggest-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.suggest-item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.suggest-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggest-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.suggest-item-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.suggest-item-platforms {
+  display: flex;
+  gap: 4px;
+}
+
+.suggest-platform-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.suggest-platform-dot.jd { background: var(--accent-jd); }
+.suggest-platform-dot.tb { background: var(--accent-tb); }
+.suggest-platform-dot.pdd { background: var(--accent-pdd); }
+
+.suggest-item-savings {
+  font-size: 11px;
+  color: var(--accent-pink);
+  font-weight: 600;
+  background: var(--glow-pink);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
 
 .search-btn {
   padding: 14px 32px;
@@ -251,10 +354,9 @@ body::before {
   background: rgba(6, 182, 212, 0.08);
 }
 
-/* Stats Row */
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -287,6 +389,7 @@ body::before {
 .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
 .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-purple)); }
 .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+.stat-card:nth-child(5)::before { background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple)); }
 
 .stat-label {
   font-size: 12px;
@@ -307,7 +410,6 @@ body::before {
 .stat-value.count { color: var(--accent-blue); }
 .stat-value.range { color: var(--accent-yellow); }
 
-/* Grid Layout */
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -319,7 +421,6 @@ body::before {
   margin-bottom: 32px;
 }
 
-/* Cards */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -350,13 +451,11 @@ body::before {
   padding: 24px;
 }
 
-/* Chart */
 .chart-wrap {
   position: relative;
   height: 320px;
 }
 
-/* Product Table */
 .product-table {
   width: 100%;
   border-collapse: collapse;
@@ -481,7 +580,6 @@ body::before {
   white-space: nowrap;
 }
 
-/* Recommendation Cards */
 .rec-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -603,7 +701,193 @@ body::before {
 
 .rec-link:hover { color: var(--accent-cyan); }
 
-/* Loading */
+/* Same Product Compare Cards */
+.group-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.group-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.group-card:hover {
+  border-color: var(--accent-pink);
+  box-shadow: 0 4px 24px rgba(236, 72, 153, 0.08);
+}
+
+.group-header {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(42, 54, 80, 0.2);
+}
+
+.group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.group-model-name {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group-brand-tag {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent-purple);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.group-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.group-savings {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-pink);
+  background: var(--glow-pink);
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.group-platform-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.group-body {
+  padding: 0;
+}
+
+.group-product-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px 100px 80px 80px 100px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(42, 54, 80, 0.3);
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.group-product-row:last-child { border-bottom: none; }
+
+.group-product-row:hover { background: var(--bg-card-hover); }
+
+.group-product-row.is-best {
+  background: var(--glow-green);
+}
+
+.group-product-row.is-best .group-price {
+  color: var(--accent-green);
+}
+
+.group-platform-cell {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.group-name-cell {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-secondary);
+}
+
+.group-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.group-price .orig {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.group-sales {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.group-rating {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.group-discount {
+  font-size: 11px;
+}
+
+.group-action {
+  text-align: right;
+}
+
+.group-action a {
+  font-size: 12px;
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.group-action a:hover { color: var(--accent-cyan); }
+
+.best-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent-green);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+.group-col-headers {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px 100px 80px 80px 100px;
+  padding: 8px 24px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
 .loading-overlay {
   display: none;
   position: fixed;
@@ -634,7 +918,6 @@ body::before {
   color: var(--text-secondary);
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -645,7 +928,6 @@ body::before {
 .empty-state h3 { font-size: 20px; margin-bottom: 8px; color: var(--text-secondary); }
 .empty-state p { font-size: 14px; }
 
-/* Results Section */
 .results-section {
   display: none;
 }
@@ -660,7 +942,6 @@ body::before {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Footer */
 .footer {
   padding: 40px 0;
   border-top: 1px solid var(--border);
@@ -670,12 +951,6 @@ body::before {
   font-size: 13px;
 }
 
-.footer a {
-  color: var(--accent-blue);
-  text-decoration: none;
-}
-
-/* Responsive */
 @media (max-width: 900px) {
   .grid-2 { grid-template-columns: 1fr; }
   .header-inner { flex-direction: column; align-items: flex-start; }
@@ -683,15 +958,20 @@ body::before {
   .rec-cards { grid-template-columns: 1fr; }
   .product-table { font-size: 12px; }
   .product-table th, .product-table td { padding: 10px 8px; }
+  .group-product-row {
+    grid-template-columns: 60px 1fr 90px 80px;
+  }
+  .group-col-headers {
+    grid-template-columns: 60px 1fr 90px 80px;
+  }
+  .group-sales, .group-rating, .group-action { display: none; }
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Table scroll */
 .table-scroll {
   overflow-x: auto;
 }
@@ -711,7 +991,7 @@ body::before {
         <div class="brand-icon">🔍</div>
         <div>
           <h1>PriceHunter</h1>
-          <div class="subtitle">电商比价猎手 · JD / TB / PDD</div>
+          <div class="subtitle">电商比价猎手 · 同款比价 · JD / TB / PDD</div>
         </div>
       </div>
     </div>
@@ -721,7 +1001,8 @@ body::before {
     <div class="search-box">
       <div class="search-input-wrap">
         <span class="icon">🔍</span>
-        <input type="text" class="search-input" id="searchInput" placeholder="输入商品关键词，如：手机、耳机、笔记本..." autocomplete="off">
+        <input type="text" class="search-input" id="searchInput" placeholder="输入商品名称或型号，如：iPhone 15 Pro Max、华为 Mate60 Pro..." autocomplete="off">
+        <div class="suggest-dropdown" id="suggestDropdown"></div>
       </div>
       <button class="search-btn" id="searchBtn" onclick="doSearch()">开始比价</button>
     </div>
@@ -747,11 +1028,23 @@ body::before {
   <div class="empty-state" id="emptyState">
     <div class="icon">📊</div>
     <h3>输入关键词开始比价</h3>
-    <p>支持京东、淘宝、拼多多三大平台实时比价</p>
+    <p>支持京东、淘宝、拼多多三大平台同款比价</p>
   </div>
 
   <div class="results-section" id="resultsSection">
     <div class="stats-row" id="statsRow"></div>
+
+    <div class="grid-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔄 同款比价 — 同产品同型号跨平台对比</div>
+          <span id="groupCount" style="font-size:12px;color:var(--text-muted)"></span>
+        </div>
+        <div class="card-body">
+          <div class="group-cards" id="groupCards"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="grid-2">
       <div class="card">
@@ -841,6 +1134,97 @@ body::before {
 <script>
 let charts = {};
 let currentData = null;
+let suggestTimer = null;
+let suggestAbort = null;
+
+const searchInput = document.getElementById('searchInput');
+const suggestDropdown = document.getElementById('suggestDropdown');
+
+searchInput.addEventListener('input', function() {
+  const val = this.value.trim();
+  if (suggestTimer) clearTimeout(suggestTimer);
+  if (suggestAbort) { suggestAbort.abort(); suggestAbort = null; }
+  if (!val || val.length < 1) {
+    suggestDropdown.classList.remove('active');
+    return;
+  }
+  suggestTimer = setTimeout(() => fetchSuggestions(val), 300);
+});
+
+searchInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    suggestDropdown.classList.remove('active');
+    doSearch();
+  }
+  if (e.key === 'Escape') {
+    suggestDropdown.classList.remove('active');
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-input-wrap')) {
+    suggestDropdown.classList.remove('active');
+  }
+});
+
+async function fetchSuggestions(keyword) {
+  suggestDropdown.innerHTML = '<div class="suggest-loading">🔍 正在联想商品...</div>';
+  suggestDropdown.classList.add('active');
+
+  try {
+    suggestAbort = new AbortController();
+    const resp = await fetch('/api/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword }),
+      signal: suggestAbort.signal,
+    });
+    const data = await resp.json();
+    renderSuggestions(data.suggestions);
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      suggestDropdown.innerHTML = '<div class="suggest-loading">联想失败，请直接搜索</div>';
+    }
+  }
+}
+
+function renderSuggestions(suggestions) {
+  if (!suggestions || suggestions.length === 0) {
+    suggestDropdown.innerHTML = '<div class="suggest-loading">未找到关联商品，请直接搜索</div>';
+    return;
+  }
+
+  const html = suggestions.map(s => {
+    const platformDots = ['京东','淘宝','拼多多'].map(p => {
+      const has = s.platform_count >= 1;
+      const cls = p === '京东' ? 'jd' : p === '淘宝' ? 'tb' : 'pdd';
+      return `<span class="suggest-platform-dot ${cls}" style="opacity:${has ? 1 : 0.2}"></span>`;
+    }).join('');
+
+    return `
+      <div class="suggest-item" onclick="selectSuggestion('${escAttr(s.label)}')">
+        <div class="suggest-item-left">
+          <span class="suggest-item-icon">📱</span>
+          <span class="suggest-item-name">${escHtml(s.label)}</span>
+        </div>
+        <div class="suggest-item-right">
+          <span class="suggest-item-price">¥${s.min_price} - ¥${s.max_price}</span>
+          <span class="suggest-item-platforms">${platformDots}</span>
+          ${s.savings > 0 ? `<span class="suggest-item-savings">省 ¥${s.savings.toFixed(0)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  suggestDropdown.innerHTML = html;
+  suggestDropdown.classList.add('active');
+}
+
+function selectSuggestion(label) {
+  searchInput.value = label;
+  suggestDropdown.classList.remove('active');
+  doSearch();
+}
 
 function togglePlatform(el) {
   el.classList.toggle('active');
@@ -852,12 +1236,13 @@ function getSelectedPlatforms() {
 }
 
 function quickSearch(kw) {
-  document.getElementById('searchInput').value = kw;
+  searchInput.value = kw;
+  suggestDropdown.classList.remove('active');
   doSearch();
 }
 
 async function doSearch() {
-  const keyword = document.getElementById('searchInput').value.trim();
+  const keyword = searchInput.value.trim();
   if (!keyword) return;
 
   const platforms = getSelectedPlatforms();
@@ -866,6 +1251,7 @@ async function doSearch() {
     return;
   }
 
+  suggestDropdown.classList.remove('active');
   const loading = document.getElementById('loading');
   const btn = document.getElementById('searchBtn');
   loading.classList.add('active');
@@ -894,6 +1280,7 @@ function renderResults(data) {
   document.getElementById('resultsSection').classList.add('active');
 
   renderStats(data);
+  renderGroupedProducts(data);
   renderDistributionChart(data);
   renderPlatformChart(data);
   renderScatterChart(data);
@@ -904,25 +1291,87 @@ function renderResults(data) {
 
 function renderStats(data) {
   const stats = data.price_stats;
+  const grouped = data.grouped || [];
+  const multiPlatformGroups = grouped.filter(g => g.platform_count >= 2).length;
+  const totalSavings = grouped.reduce((sum, g) => sum + g.savings, 0);
+
   const html = `
     <div class="stat-card">
       <div class="stat-label">采集商品</div>
       <div class="stat-value count">${data.total_after_clean}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">最低价</div>
-      <div class="stat-value price">¥${stats.min}</div>
+      <div class="stat-label">同款分组</div>
+      <div class="stat-value" style="color:var(--accent-pink)">${grouped.length}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">平均价</div>
-      <div class="stat-value range">¥${stats.avg}</div>
+      <div class="stat-label">跨平台同款</div>
+      <div class="stat-value" style="color:var(--accent-purple)">${multiPlatformGroups}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">最高价</div>
-      <div class="stat-value" style="color:var(--accent-purple)">¥${stats.max}</div>
+      <div class="stat-label">最大可省</div>
+      <div class="stat-value price">¥${totalSavings.toFixed(0)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">价格区间</div>
+      <div class="stat-value range">¥${stats.min}~${stats.max}</div>
     </div>
   `;
   document.getElementById('statsRow').innerHTML = html;
+}
+
+function renderGroupedProducts(data) {
+  const grouped = data.grouped || [];
+  document.getElementById('groupCount').textContent = `共 ${grouped.length} 个同款分组`;
+
+  const html = grouped.map(g => {
+    const platformDots = g.platforms.map(p => {
+      const cls = p === '京东' ? 'jd' : p === '淘宝' ? 'tb' : 'pdd';
+      return `<span class="suggest-platform-dot ${cls}"></span>`;
+    }).join('');
+
+    const productRows = g.products.map(p => {
+      const platformClass = p.platform === '京东' ? 'jd' : p.platform === '淘宝' ? 'tb' : 'pdd';
+      const isBest = p.price === g.best_price;
+      return `
+        <div class="group-product-row ${isBest ? 'is-best' : ''}">
+          <div class="group-platform-cell"><span class="platform-badge ${platformClass}">${escHtml(p.platform)}</span></div>
+          <div class="group-name-cell" title="${escHtml(p.name)}">${escHtml(p.name)}${isBest ? '<span class="best-tag">最低价</span>' : ''}</div>
+          <div class="group-price">
+            ¥${p.price.toFixed(2)}
+            ${p.original_price ? `<span class="orig">¥${p.original_price.toFixed(2)}</span>` : ''}
+          </div>
+          <div class="group-sales">${p.sales.toLocaleString()}件</div>
+          <div class="group-rating">${p.shop_rating}</div>
+          <div class="group-discount">${p.discount ? `<span class="discount-tag">${escHtml(p.discount)}</span>` : ''}</div>
+          <div class="group-action"><a href="${escHtml(p.url)}" target="_blank" rel="noopener">去购买 →</a></div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="group-card">
+        <div class="group-header">
+          <div class="group-header-left">
+            <span class="group-brand-tag">${escHtml(g.brand || '综合')}</span>
+            <span class="group-model-name">${escHtml(g.label)}</span>
+          </div>
+          <div class="group-header-right">
+            ${g.savings > 0 ? `<span class="group-savings">跨平台可省 ¥${g.savings.toFixed(2)}</span>` : ''}
+            <div class="group-platform-dots">${platformDots}</div>
+          </div>
+        </div>
+        <div class="group-col-headers">
+          <span>平台</span><span>商品</span><span>价格</span><span>销量</span><span>评分</span><span>优惠</span><span></span>
+        </div>
+        <div class="group-body">
+          ${productRows}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('groupCards').innerHTML = html;
 }
 
 function renderDistributionChart(data) {
@@ -957,18 +1406,10 @@ function renderDistributionChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-      },
+      plugins: { legend: { display: false } },
       scales: {
-        x: {
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
-        },
-        y: {
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
-        },
+        x: { grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } } },
+        y: { grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } } },
       },
     },
   });
@@ -1011,24 +1452,10 @@ function renderPlatformChart(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
-        },
-      },
+      plugins: { legend: { labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } } } },
       scales: {
-        x: {
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
-        },
-        y: {
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: {
-            color: '#8899b4',
-            font: { family: 'JetBrains Mono', size: 11 },
-            callback: v => '¥' + v,
-          },
-        },
+        x: { grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } } },
+        y: { grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 }, callback: v => '¥' + v } },
       },
     },
   });
@@ -1067,29 +1494,12 @@ function renderScatterChart(data) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: {
-          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
-        },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const d = ctx.raw;
-              return `${d.name.substring(0, 20)}... ¥${d.x} / 销量${d.y}`;
-            },
-          },
-        },
+        legend: { labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } } },
+        tooltip: { callbacks: { label: ctx => { const d = ctx.raw; return `${d.name.substring(0, 20)}... ¥${d.x} / 销量${d.y}`; } } },
       },
       scales: {
-        x: {
-          title: { display: true, text: '价格 (¥)', color: '#8899b4', font: { family: 'Noto Sans SC' } },
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
-        },
-        y: {
-          title: { display: true, text: '销量', color: '#8899b4', font: { family: 'Noto Sans SC' } },
-          grid: { color: 'rgba(42,54,80,0.3)' },
-          ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } },
-        },
+        x: { title: { display: true, text: '价格 (¥)', color: '#8899b4', font: { family: 'Noto Sans SC' } }, grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } } },
+        y: { title: { display: true, text: '销量', color: '#8899b4', font: { family: 'Noto Sans SC' } }, grid: { color: 'rgba(42,54,80,0.3)' }, ticks: { color: '#8899b4', font: { family: 'JetBrains Mono', size: 11 } } },
       },
     },
   });
@@ -1119,28 +1529,12 @@ function renderRadarChart(data) {
   const ctx = document.getElementById('radarChart').getContext('2d');
   charts.radar = new Chart(ctx, {
     type: 'radar',
-    data: {
-      labels: ['价格评分', '销量评分', '口碑评分', '综合评分'],
-      datasets,
-    },
+    data: { labels: ['价格评分', '销量评分', '口碑评分', '综合评分'], datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 11 } },
-        },
-      },
-      scales: {
-        r: {
-          angleLines: { color: 'rgba(42,54,80,0.5)' },
-          grid: { color: 'rgba(42,54,80,0.5)' },
-          pointLabels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } },
-          ticks: { display: false },
-          suggestedMin: 0,
-          suggestedMax: 100,
-        },
-      },
+      plugins: { legend: { labels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 11 } } } },
+      scales: { r: { angleLines: { color: 'rgba(42,54,80,0.5)' }, grid: { color: 'rgba(42,54,80,0.5)' }, pointLabels: { color: '#8899b4', font: { family: 'Noto Sans SC', size: 12 } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 100 } },
     },
   });
 }
@@ -1223,16 +1617,16 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
-document.getElementById('searchInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch();
-});
+function escAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
 
 async function loadDemo() {
   try {
-    const resp = await fetch('/api/demo?keyword=手机');
+    const resp = await fetch('/api/demo?keyword=%E6%89%8B%E6%9C%BA');
     const data = await resp.json();
     currentData = data;
-    document.getElementById('searchInput').value = '手机';
+    searchInput.value = '手机';
     renderResults(data);
   } catch (e) {
     console.error('Demo load failed:', e);
