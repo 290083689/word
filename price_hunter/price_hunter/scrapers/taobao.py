@@ -57,14 +57,80 @@ class TaobaoScraper(BaseScraper):
         ("升级版 性价比之王", 419, 2500),
     ]
 
+    KEYWORD_PRODUCT_MAP = {
+        "iphone": [
+            ("Apple iPhone 17 ProMax 国行正品", 10499, 6000),
+            ("Apple iPhone 17 ProMax 512GB", 11999, 4000),
+            ("Apple iPhone 17 ProMax 1TB", 13499, 1500),
+            ("Apple iPhone 17 Pro 国行正品", 8999, 8000),
+            ("Apple iPhone 17 Pro 512GB", 10499, 5000),
+            ("Apple iPhone 17 国行正品", 6999, 12000),
+            ("Apple iPhone 17 Plus 正品", 7999, 6000),
+            ("Apple iPhone 16 ProMax 正品", 8999, 10000),
+            ("Apple iPhone 16 Pro 正品", 7499, 15000),
+            ("Apple iPhone 16 正品", 5999, 20000),
+        ],
+        "华为": [
+            ("华为 Mate70 Pro+ 全网通5G", 8199, 8000),
+            ("华为 Mate70 Pro 全网通5G", 6699, 14000),
+            ("华为 Mate70 全网通5G", 5299, 12000),
+            ("华为 Pura70 Ultra 影像旗舰", 7699, 6000),
+            ("华为 Pura70 Pro 影像旗舰", 5699, 10000),
+            ("华为 nova13 Pro 潮流手机", 3299, 18000),
+        ],
+        "小米": [
+            ("小米15 Ultra 徕卡影像旗舰", 6299, 10000),
+            ("小米15 Pro 骁龙8Elite", 5099, 15000),
+            ("小米15 骁龙8Elite", 4299, 22000),
+            ("Redmi K80 Pro 性能旗舰", 3399, 28000),
+            ("Redmi K80 性价比之王", 2599, 35000),
+            ("小米 Civi4 Pro 潮流手机", 2899, 7000),
+        ],
+        "三星": [
+            ("三星 S25 Ultra AI旗舰手机", 9999, 4000),
+            ("三星 S25+ AI旗舰手机", 7699, 5000),
+            ("三星 S25 AI旗舰手机", 6199, 7000),
+            ("三星 Z Fold6 折叠旗舰", 13499, 2500),
+            ("三星 Z Flip6 翻盖旗舰", 7699, 3500),
+        ],
+        "airpods": [
+            ("Apple AirPods Pro3 正品", 1899, 25000),
+            ("Apple AirPods Pro2 正品", 1599, 40000),
+            ("Apple AirPods 4 正品", 1099, 35000),
+            ("Apple AirPods Max 头戴式", 3799, 4000),
+        ],
+        "macbook": [
+            ("苹果 MacBook Pro16 M4Pro", 17999, 2500),
+            ("苹果 MacBook Pro14 M4", 13999, 4000),
+            ("苹果 MacBook Air15 M3", 10499, 7000),
+            ("苹果 MacBook Air13 M3", 8499, 10000),
+        ],
+    }
+
     SHOP_NAMES = [
         "数码旗舰店", "品牌专营店", "官方直营店", "科技数码店",
         "品质生活馆", "好物精选店", "正品折扣店", "潮流数码店",
     ]
 
+    def _resolve_templates(self, keyword: str):
+        templates = self.PRODUCT_TEMPLATES.get(keyword)
+        if templates:
+            return templates, keyword
+
+        kw_lower = keyword.lower().strip()
+        for brand_key, products in self.KEYWORD_PRODUCT_MAP.items():
+            if brand_key in kw_lower:
+                return products, self.resolve_category(keyword) or "手机"
+
+        category = self.resolve_category(keyword)
+        if category and category in self.PRODUCT_TEMPLATES:
+            return self.PRODUCT_TEMPLATES[category], category
+
+        return self.DEFAULT_PRODUCTS, ""
+
     def search(self, keyword: str, page: int = 1) -> List[Product]:
         products = []
-        templates = self.PRODUCT_TEMPLATES.get(keyword, self.DEFAULT_PRODUCTS)
+        templates, _ = self._resolve_templates(keyword)
 
         for i, (name, base_price, base_sales) in enumerate(templates):
             offset = (page - 1) * len(templates)

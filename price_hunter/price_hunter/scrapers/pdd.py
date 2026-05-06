@@ -57,14 +57,80 @@ class PddScraper(BaseScraper):
         ("精选好物 包邮到家", 379, 3000),
     ]
 
+    KEYWORD_PRODUCT_MAP = {
+        "iphone": [
+            ("iPhone 17 ProMax 百亿补贴", 9899, 15000),
+            ("iPhone 17 ProMax 512GB 百亿补贴", 11399, 8000),
+            ("iPhone 17 ProMax 1TB 百亿补贴", 12899, 3000),
+            ("iPhone 17 Pro 百亿补贴", 8499, 18000),
+            ("iPhone 17 Pro 512GB 百亿补贴", 9999, 10000),
+            ("iPhone 17 百亿补贴", 6499, 25000),
+            ("iPhone 17 Plus 百亿补贴", 7499, 12000),
+            ("iPhone 16 ProMax 百亿补贴", 8499, 22000),
+            ("iPhone 16 Pro 百亿补贴", 6999, 30000),
+            ("iPhone 16 百亿补贴", 5499, 40000),
+        ],
+        "华为": [
+            ("华为 Mate70 Pro+ 百亿补贴", 7899, 15000),
+            ("华为 Mate70 Pro 百亿补贴", 6399, 28000),
+            ("华为 Mate70 百亿补贴", 4999, 22000),
+            ("华为 Pura70 Ultra 百亿补贴", 7399, 10000),
+            ("华为 Pura70 Pro 百亿补贴", 5399, 18000),
+            ("华为 nova13 Pro 百亿补贴", 2999, 30000),
+        ],
+        "小米": [
+            ("小米15 Ultra 百亿补贴", 5999, 18000),
+            ("小米15 Pro 百亿补贴", 4899, 25000),
+            ("小米15 百亿补贴", 4099, 35000),
+            ("Redmi K80 Pro 百亿补贴", 3199, 45000),
+            ("Redmi K80 百亿补贴", 2399, 55000),
+            ("小米 Civi4 Pro 百亿补贴", 2699, 12000),
+        ],
+        "三星": [
+            ("三星 S25 Ultra 百亿补贴", 9499, 8000),
+            ("三星 S25+ 百亿补贴", 7299, 9000),
+            ("三星 S25 百亿补贴", 5899, 12000),
+            ("三星 Z Fold6 百亿补贴", 12999, 4000),
+            ("三星 Z Flip6 百亿补贴", 7299, 6000),
+        ],
+        "airpods": [
+            ("AirPods Pro3 百亿补贴", 1799, 40000),
+            ("AirPods Pro2 百亿补贴", 1399, 55000),
+            ("AirPods 4 百亿补贴", 999, 50000),
+            ("AirPods Max 百亿补贴", 3499, 6000),
+        ],
+        "macbook": [
+            ("MacBook Pro16 M4Pro 百亿补贴", 16999, 4000),
+            ("MacBook Pro14 M4 百亿补贴", 12999, 6000),
+            ("MacBook Air15 M3 百亿补贴", 9499, 10000),
+            ("MacBook Air13 M3 百亿补贴", 7999, 15000),
+        ],
+    }
+
     SHOP_NAMES = [
         "官方旗舰店", "品牌特卖店", "百亿补贴店", "正品直营店",
         "好物专营店", "品质优选店", "超值特卖店", "源头工厂店",
     ]
 
+    def _resolve_templates(self, keyword: str):
+        templates = self.PRODUCT_TEMPLATES.get(keyword)
+        if templates:
+            return templates, keyword
+
+        kw_lower = keyword.lower().strip()
+        for brand_key, products in self.KEYWORD_PRODUCT_MAP.items():
+            if brand_key in kw_lower:
+                return products, self.resolve_category(keyword) or "手机"
+
+        category = self.resolve_category(keyword)
+        if category and category in self.PRODUCT_TEMPLATES:
+            return self.PRODUCT_TEMPLATES[category], category
+
+        return self.DEFAULT_PRODUCTS, ""
+
     def search(self, keyword: str, page: int = 1) -> List[Product]:
         products = []
-        templates = self.PRODUCT_TEMPLATES.get(keyword, self.DEFAULT_PRODUCTS)
+        templates, _ = self._resolve_templates(keyword)
 
         for i, (name, base_price, base_sales) in enumerate(templates):
             offset = (page - 1) * len(templates)

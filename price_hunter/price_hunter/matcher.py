@@ -31,7 +31,7 @@ class ProductMatcher:
 
     MODEL_PATTERNS = [
         r"(?:iphone|iPhone)\s*(\d+)\s*(?:pro\s*max|pro|plus|mini|max)?",
-        r"(?:mate|Mate)\s*(\d+)\s*(?:pro|pro\+|x|rs)?",
+        r"(?:mate|Mate)\s*(\d+)\s*(?:pro\s*\+|pro|x|rs)?",
         r"(?:小米|Redmi|redmi)\s*(\d+)\s*(?:ultra|pro|note|a|se)?",
         r"(?:Find|find)\s*[xX](\d+)\s*(?:ultra|pro)?",
         r"[xX](\d+)\s*(?:pro|ultra)?",
@@ -54,12 +54,24 @@ class ProductMatcher:
         r"(?:GT)\s*(\d+)\s*(?:pro|neo)?",
         r"(?:K)(\d+)\s*(?:pro|ultra|e)?",
         r"(?:edge)\s*[xX](\d+)",
+        r"(?:Pura|pura)\s*(\d+)\s*(?:ultra|pro)?",
+        r"(?:nova|Nova)\s*(\d+)\s*(?:pro|ultra)?",
+        r"(?:Civi|civi)\s*(\d+)\s*(?:pro)?",
+        r"(?:Z)\s*(?:Fold|fold)(\d+)",
+        r"(?:Z)\s*(?:Flip|flip)(\d+)",
     ]
 
     SPEC_KEYWORDS = [
         "256gb", "512gb", "1tb", "128gb", "16gb", "8gb", "12gb",
         "pro max", "pro", "ultra", "plus", "mini", "se",
         "gen11", "gen12", "2024", "2023", "m3", "m3 pro", "m3 max",
+        "m4", "m4 pro", "m4 max",
+    ]
+
+    STRIP_PREFIXES = [
+        "京东自营", "京东", "百亿补贴", "正品保证", "全网最低", "限时特惠",
+        "爆款直降", "万人团", "国行正品", "官方直营", "假一赔十", "品质好货",
+        "超值推荐", "限时秒杀", "精选好物", "包邮到家", "正品保障",
     ]
 
     @classmethod
@@ -72,13 +84,22 @@ class ProductMatcher:
         return ""
 
     @classmethod
+    def _normalize_model(cls, model: str) -> str:
+        m = re.sub(r"pro\s*max", "pro max", model, flags=re.IGNORECASE)
+        m = re.sub(r"promax", "pro max", m, flags=re.IGNORECASE)
+        m = re.sub(r"pro\s*\+", "pro+", m, flags=re.IGNORECASE)
+        m = re.sub(r"\s+", " ", m).strip()
+        return m.lower()
+
+    @classmethod
     def extract_model(cls, name: str) -> str:
         name_clean = re.sub(r"[()（）\[\]【】]", " ", name)
         models = []
         for pattern in cls.MODEL_PATTERNS:
             match = re.search(pattern, name_clean, re.IGNORECASE)
             if match:
-                models.append(match.group(0).strip())
+                raw = match.group(0).strip()
+                models.append(cls._normalize_model(raw))
 
         for spec in cls.SPEC_KEYWORDS:
             if spec in name.lower():
@@ -91,7 +112,8 @@ class ProductMatcher:
         brand = cls.extract_brand(product.name)
         model = cls.extract_model(product.name)
         if brand and model:
-            return f"{brand}__{model.lower().replace(' ', '_')}"
+            normalized = model.lower().replace(" ", "_")
+            return f"{brand}__{normalized}"
         elif brand:
             return f"{brand}__{product.name[:20].lower().replace(' ', '_')}"
         else:
@@ -146,7 +168,7 @@ class ProductMatcher:
     def _generate_label(cls, product: Product) -> str:
         brand = cls.extract_brand(product.name)
         name = product.name
-        for prefix in ["京东自营", "京东", "百亿补贴", "正品保证", "全网最低", "限时特惠", "爆款直降", "万人团"]:
+        for prefix in cls.STRIP_PREFIXES:
             name = name.replace(prefix, "").strip()
         if brand:
             brand_cn = cls.BRAND_KEYWORDS.get(brand, [brand])

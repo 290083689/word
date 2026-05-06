@@ -12,6 +12,7 @@ class JdScraper(BaseScraper):
     BRAND_PREFIXES = [
         "京东自营", "京东", "", "", ""
     ]
+
     PRODUCT_TEMPLATES = {
         "手机": [
             ("Apple iPhone 15 Pro Max 256GB", 8999, 12000),
@@ -60,9 +61,75 @@ class JdScraper(BaseScraper):
         ("升级版 性能更强", 449, 2000),
     ]
 
+    KEYWORD_PRODUCT_MAP = {
+        "iphone": [
+            ("Apple iPhone 17 Pro Max 256GB", 10999, 8000),
+            ("Apple iPhone 17 Pro Max 512GB", 12499, 5000),
+            ("Apple iPhone 17 Pro Max 1TB", 13999, 2000),
+            ("Apple iPhone 17 Pro 256GB", 9499, 10000),
+            ("Apple iPhone 17 Pro 512GB", 10999, 6000),
+            ("Apple iPhone 17 256GB", 7499, 15000),
+            ("Apple iPhone 17 Plus 256GB", 8499, 7000),
+            ("Apple iPhone 16 Pro Max 256GB", 9499, 12000),
+            ("Apple iPhone 16 Pro 256GB", 7999, 18000),
+            ("Apple iPhone 16 256GB", 6299, 25000),
+        ],
+        "华为": [
+            ("华为 Mate 70 Pro+ 512GB", 8499, 10000),
+            ("华为 Mate 70 Pro 256GB", 6999, 18000),
+            ("华为 Mate 70 256GB", 5499, 15000),
+            ("华为 Pura 70 Ultra", 7999, 8000),
+            ("华为 Pura 70 Pro", 5999, 12000),
+            ("华为 nova 13 Pro", 3499, 20000),
+        ],
+        "小米": [
+            ("小米15 Ultra 16GB+512GB", 6499, 12000),
+            ("小米15 Pro 16GB+256GB", 5299, 18000),
+            ("小米15 12GB+256GB", 4499, 25000),
+            ("Redmi K80 Pro", 3599, 30000),
+            ("Redmi K80", 2699, 40000),
+            ("小米 Civi 4 Pro", 2999, 8000),
+        ],
+        "三星": [
+            ("三星 Galaxy S25 Ultra 256GB", 10499, 5000),
+            ("三星 Galaxy S25+ 256GB", 7999, 6000),
+            ("三星 Galaxy S25 256GB", 6499, 8000),
+            ("三星 Galaxy Z Fold6", 13999, 3000),
+            ("三星 Galaxy Z Flip6", 7999, 4000),
+        ],
+        "airpods": [
+            ("Apple AirPods Pro 3", 1999, 30000),
+            ("Apple AirPods Pro 2", 1799, 50000),
+            ("Apple AirPods 4", 1199, 40000),
+            ("Apple AirPods Max", 3999, 5000),
+        ],
+        "macbook": [
+            ("苹果 MacBook Pro 16 M4 Pro", 18999, 3000),
+            ("苹果 MacBook Pro 14 M4", 14999, 5000),
+            ("苹果 MacBook Air 15 M3", 10999, 8000),
+            ("苹果 MacBook Air 13 M3", 8999, 12000),
+        ],
+    }
+
+    def _resolve_templates(self, keyword: str):
+        templates = self.PRODUCT_TEMPLATES.get(keyword)
+        if templates:
+            return templates, keyword
+
+        kw_lower = keyword.lower().strip()
+        for brand_key, products in self.KEYWORD_PRODUCT_MAP.items():
+            if brand_key in kw_lower:
+                return products, self.resolve_category(keyword) or "手机"
+
+        category = self.resolve_category(keyword)
+        if category and category in self.PRODUCT_TEMPLATES:
+            return self.PRODUCT_TEMPLATES[category], category
+
+        return self.DEFAULT_PRODUCTS, ""
+
     def search(self, keyword: str, page: int = 1) -> List[Product]:
         products = []
-        templates = self.PRODUCT_TEMPLATES.get(keyword, self.DEFAULT_PRODUCTS)
+        templates, _ = self._resolve_templates(keyword)
 
         for i, (name, base_price, base_sales) in enumerate(templates):
             offset = (page - 1) * len(templates)
